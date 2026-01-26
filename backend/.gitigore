@@ -1,6 +1,14 @@
+# Python
 venv/
 __pycache__/
 *.pyc
-.env
-backend/venv/
+
+# Wheels / binaries
 *.whl
+
+# Django
+db.sqlite3
+.env
+
+# OS
+.DS_Store
