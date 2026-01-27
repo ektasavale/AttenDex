@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import register_face, mark_attendance
+from .views import test_api, register_face, mark_attendance
 
 urlpatterns = [
-    path('register-face/', register_face, name='register-face'),
-    path('mark-attendance/', mark_attendance, name='mark-attendance'),
+    path('test/', test_api),
+    path('register/', register_face),
+    path('mark/', mark_attendance),
 ]
