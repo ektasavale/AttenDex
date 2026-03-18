@@ -1,6 +1,6 @@
 import face_recognition
 import numpy as np
-
+from datetime import date,time
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,64 +9,120 @@ from .models import Student, FaceEncoding, Attendance
 from .serializers import RegisterFaceSerializer,AttendanceSerializer
 
 from django.utils import timezone
+class StudentListAPIView(APIView):
+    def get(self, request):
+        students = Student.objects.all().values()
+        return Response(students)
 
+class StudentDetailAPIView(APIView):
+    def get(self, request, id):
+        try:
+            student = Student.objects.get(id=id)
+            return Response({
+                "id": student.id,
+                "name": student.name,
+                "student_id": student.student_id,
+                "email": student.email
+            })
+        except Student.DoesNotExist:
+            return Response({"error": "Student not found"})
+class StudentDeleteAPIView(APIView):
+    def delete(self, request, id):
+        try:
+            student = Student.objects.get(id=id)
+            student.delete()
+            return Response({"message": "Student deleted"})
+        except Student.DoesNotExist:
+            return Response({"error": "Student not found"})
+class AttendanceListAPIView(APIView):
+    def get(self, request):
+        records = Attendance.objects.all().values(
+            'student__name',
+            'student__student_id',
+            'date',
+            'time',
+            'status'
+        )
+        return Response(records)
+class AttendanceByDateAPIView(APIView):
+    def get(self, request):
+        date = request.GET.get('date')
 
+        records = Attendance.objects.filter(date=date).values(
+            'student__name',
+            'date',
+            'time',
+            'status'
+        )
+        return Response(records)
+class AttendanceByStudentAPIView(APIView):
+    def get(self, request, student_id):
+        records = Attendance.objects.filter(
+            student__student_id=student_id
+        ).values('date', 'time', 'status')
+
+        return Response(records)
+from django.urls import path
+from .views import *
 
 class MarkAttendanceAPIView(APIView):
-
     def post(self, request):
         image = request.FILES.get('image')
+
         if not image:
-            return Response({"error": "Image is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No image provided"}, status=400)
 
         # Load image
-        image_np = face_recognition.load_image_file(image)
+        img = face_recognition.load_image_file(image)
 
-        # Detect faces
-        face_locations = face_recognition.face_locations(image_np)
-        if len(face_locations) == 0:
-            return Response({"error": "No face detected"}, status=status.HTTP_400_BAD_REQUEST)
-        if len(face_locations) > 1:
-            return Response({"error": "Multiple faces detected. Upload single face image"}, status=status.HTTP_400_BAD_REQUEST)
+        # Detect face
+        encodings = face_recognition.face_encodings(img)
 
-        # Get encoding for face in uploaded image
-        face_encoding = face_recognition.face_encodings(image_np, face_locations)[0]
+        if len(encodings) == 0:
+            return Response({"error": "No face detected"}, status=400)
 
-        # Fetch all stored face encodings from DB
-        stored_encodings = FaceEncoding.objects.all()
+        unknown_encoding = encodings[0]
 
-        if not stored_encodings.exists():
-            return Response({"error": "No registered faces found in database"}, status=status.HTTP_404_NOT_FOUND)
+        # Get all stored encodings
+        known_faces = FaceEncoding.objects.all()
 
-        known_encodings = []
-        students = []
-        for f in stored_encodings:
-            known_encodings.append(np.frombuffer(f.encoding, dtype=np.float64))
-            students.append(f.student)
+        for face in known_faces:
+            known_encoding = np.frombuffer(face.encoding, dtype=np.float64)
 
-        # Compare uploaded face encoding with all known encodings
-        matches = face_recognition.compare_faces(known_encodings, face_encoding, tolerance=0.5)
+            match = face_recognition.compare_faces(
+                [known_encoding],
+                unknown_encoding
+            )
 
-        if True not in matches:
-            return Response({"error": "Face not recognized"}, status=status.HTTP_404_NOT_FOUND)
+            if match[0]:
+                student = face.student
 
-        # Get matched student
-        matched_idx = matches.index(True)
-        matched_student = students[matched_idx]
+                # Prevent duplicate attendance
+                today = date.today()
+                already_marked = Attendance.objects.filter(
+                    student=student,
+                    date=today
+                ).exists()
 
-        today = timezone.now().date()
+                if already_marked:
+                    return Response({
+                        "message": "Attendance already marked",
+                        "student": student.name
+                    })
 
-        attendance, created = Attendance.objects.get_or_create(
-            student=matched_student,
-            date=today,
-            defaults={'status': 'present'}
-        )
+                # Mark attendance
+                Attendance.objects.create(
+                    student=student,
+                    date=today,
+                    status="PRESENT"
+                )
 
-        if not created:
-            return Response({"message": "Attendance already marked for today"}, status=status.HTTP_200_OK)
+                return Response({
+                    "message": "Attendance marked",
+                    "student": student.name
+                })
 
-        serializer = AttendanceSerializer(attendance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"error": "No matching student found"}, status=404)
 
 class RegisterFaceAPIView(APIView):
 
@@ -103,7 +159,7 @@ class RegisterFaceAPIView(APIView):
         face_encoding = face_recognition.face_encodings(
             image_np, face_locations
         )[0]
-
+        
         # ---- Save student ----
         student, created = Student.objects.get_or_create(
             student_id=student_id,
@@ -122,3 +178,4 @@ class RegisterFaceAPIView(APIView):
             {"message": "Face registered successfully"},
             status=status.HTTP_201_CREATED
         )
+        
