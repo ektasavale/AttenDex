@@ -14,6 +14,12 @@ import {
 
 import Webcam from "react-webcam";
 
+const appStyle = {
+  minHeight: "100vh",
+  background: "linear-gradient(135deg, #1e1e2f, #2c3e50)",
+  color: "white",
+  fontFamily: "Segoe UI, sans-serif"
+};
 
 // Splash Screen
 
@@ -84,14 +90,25 @@ function TeacherDashboard() {
   const [subject, setSubject] = useState("Mathematics");
   const navigate = useNavigate();
 
-  const stats = { students: 30, present: 28, absent: 2 };
+  const [stats, setStats] = useState({
+    total: 0,
+    present: 0,
+    absent: 0
+  });
 
-  const data = [
-    { id: "ST001", name: "Rahul", class: "Math 101", status: "Present" },
-    { id: "ST002", name: "Sneha", class: "Math 101", status: "Absent" },
-    { id: "ST003", name: "Amit", class: "Math 101", status: "Half Day" }
-  ];
-
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api/stats/?className=${subject}`)
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(err => console.error(err));
+  }, [subject]);
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api/attendance-list/?className=${subject}`)
+      .then(res => res.json())
+      .then(data => setData(data))
+      .catch(err => console.error(err));
+  }, [subject]);
   return (
     <div style={{
       display: "flex", minHeight: "100vh",
@@ -99,29 +116,25 @@ function TeacherDashboard() {
       color: "white", fontFamily: "Segoe UI"
     }}>
       {/* Sidebar */}
-      
 
-
-  return (
-    <div style={{ width: "200px", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
-      <h2>Attendex</h2>
-      <p onClick={() => navigate("/")}>
-        <FaHome style={{ marginRight: "8px" }} /> Dashboard
-      </p>
-      <p onClick={() => navigate("/register")}>
-        <FaUserPlus style={{ marginRight: "8px" }} /> Register Student
-      </p>
-      <p onClick={() => navigate("/mark-attendance")}>
-        <FaClipboardCheck style={{ marginRight: "8px" }} /> Mark Attendance
-      </p>
-      <p onClick={() => navigate("/reports")}>
-        <FaChartBar style={{ marginRight: "8px" }} /> Reports
-      </p>
-      <p onClick={() => navigate("/settings/privacy")}>
-        <FaLock style={{ marginRight: "8px" }} /> Privacy Settings
-      </p>
-    </div>
-  );
+      <div style={{ width: "200px", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
+        <h2>Attendex</h2>
+        <p onClick={() => navigate("/")}>
+          <FaHome style={{ marginRight: "8px" }} /> Dashboard
+        </p>
+        <p onClick={() => navigate("/register")}>
+          <FaUserPlus style={{ marginRight: "8px" }} /> Register Student
+        </p>
+        <p onClick={() => navigate("/mark-attendance")}>
+          <FaClipboardCheck style={{ marginRight: "8px" }} /> Mark Attendance
+        </p>
+        <p onClick={() => navigate("/reports")}>
+          <FaChartBar style={{ marginRight: "8px" }} /> Reports
+        </p>
+        <p onClick={() => navigate("/settings/privacy")}>
+          <FaLock style={{ marginRight: "8px" }} /> Privacy Settings
+        </p>
+      </div>
 
 
 
@@ -142,10 +155,10 @@ function TeacherDashboard() {
 
         {/* Stats Cards */}
         <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-          <StatCard title="👨‍🎓 Total Students" value={stats.students} />
+          <StatCard title="👨‍🎓 Total Students" value={stats.total} />
           <StatCard title="✅ Present Today" value={stats.present} />
           <StatCard title="🚫 Absent Today" value={stats.absent} />
-          <StatCard title="📚 Classes" value={6} />
+
         </div>
 
         {/* Notification */}
@@ -168,14 +181,28 @@ function TeacherDashboard() {
               </tr>
             </thead>
             <tbody>
-              {data.map((s, i) => (
-                <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.05)" : "transparent" }}>
-                  <td>{s.id}</td>
-                  <td>{s.name}</td>
-                  <td>{s.class}</td>
-                  <td><span style={statusStyle(s.status)}>{s.status}</span></td>
-                </tr>
-              ))}
+              <tbody>
+                {data.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: "center" }}>
+                      No attendance data
+                    </td>
+                  </tr>
+                ) : (
+                  data.map((s, i) => (
+                    <tr key={i}>
+                      <td>{s.rollNo}</td>
+                      <td>{s.name}</td>
+                      <td>{subject}</td>
+                      <td>
+                        <span style={statusStyle(s.status)}>
+                          {s.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
             </tbody>
           </table>
         </div>
@@ -199,13 +226,36 @@ function RegisterStudent() {
 
   const handleRegister = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
-    await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rollNo, name, className, faceImage: imageSrc })
-    });
-    alert("Student registered successfully!");
+
+    if (!imageSrc) {
+      alert("⚠️ Camera not ready!");
+      return;
+    }
+
+    try {
+      console.log("Image:", imageSrc?.substring(0, 50));
+      const res = await fetch("http://127.0.0.1:8000/api/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rollNo, name, className, faceImage: imageSrc })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("✅ Student registered successfully!");
+        console.log("Success:", data);
+      } else {
+        alert("❌ " + (data.error || "Registration failed"));
+        console.error("Error:", data);
+      }
+
+    } catch (error) {
+      console.error("Network error:", error);
+      alert("❌ Server error!");
+    }
   };
+
 
   return (
     <div style={{
@@ -269,45 +319,123 @@ function RegisterStudent() {
 // Mark Attendance Page
 function MarkAttendance() {
   const webcamRef = useRef(null);
-  const [rollNo, setRollNo] = useState("");
+
   const [className, setClassName] = useState("");
+  const [result, setResult] = useState("");
 
   const handleAttendance = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
-    await fetch("/api/attendance", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rollNo, className, faceImage: imageSrc })
-    });
-    alert("Attendance marked successfully!");
+
+    if (!imageSrc) {
+      alert("⚠️ Camera not ready!");
+      return;
+    }
+
+    if (!className) {
+      alert("⚠️ Enter class name");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/attendance/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          className: className,
+          faceImage: imageSrc
+        })
+      });
+
+      const data = await res.json();
+      const [loading, setLoading] = useState(false);
+      setLoading(true);
+      // API call
+      setLoading(false);
+      { loading ? "Scanning..." : "Scan Face & Mark" }
+      if (res.ok) {
+        setResult(`✅ ${data.name} marked ${data.status}`);
+      }
+      if (data.status === "Already Marked") {
+        setResult(`⚠️ ${data.name} already marked today`);
+      } else {
+        setResult(`❌ ${data.error}`);
+      }
+
+    } catch (error) {
+      console.error(error);
+      setResult("❌ Server error");
+    }
   };
 
   return (
-    <div style={{ padding: "20px", color: "white", background:"radial-gradient(circle at center, #852020, #22124b, #946221)", minHeight: "100vh" }}>
-      <h2>✅ Mark Attendance</h2>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "100vh",
+      background: "radial-gradient(circle at center, #852020, #22124b, #946221)",
+      color: "white"
+    }}>
+      <h2>📸 Mark Attendance</h2>
+
       <input
-        placeholder="Roll No"
-        value={rollNo}
-        onChange={(e) => setRollNo(e.target.value)}
-        style={inputStyle}
-      />
-      <input
-        placeholder="Class"
+        placeholder="Enter Class"
         value={className}
         onChange={(e) => setClassName(e.target.value)}
-        style={inputStyle}
+        style={{
+          padding: "10px",
+          margin: "10px",
+          borderRadius: "8px",
+          border: "none"
+        }}
       />
+
       <Webcam
         ref={webcamRef}
         screenshotFormat="image/jpeg"
-        style={{ width: "300px", margin: "20px 0" }}
+        videoConstraints={{
+          width: 640,
+          height: 480,
+          facingMode: "user"
+        }}
+        style={{
+          width: "300px",
+          borderRadius: "10px",
+          margin: "20px 0"
+        }}
       />
-      <button style={buttonStyle} onClick={handleAttendance}>
+
+      <button
+        onClick={handleAttendance}
+        style={{
+          padding: "12px 20px",
+          background: "green",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          cursor: "pointer"
+        }}
+      >
         Scan Face & Mark
       </button>
+
+      {/* RESULT DISPLAY */}
+      {result && (
+        <div style={{
+          marginTop: "20px",
+          padding: "15px",
+          background: "rgba(255,255,255,0.2)",
+          borderRadius: "10px",
+          fontSize: "1.2rem"
+        }}>
+          {result}
+        </div>
+      )}
     </div>
   );
 }
+
 // Stat Card
 function StatCard({ title, value }) {
   return (
@@ -381,7 +509,7 @@ function App() {
             <Route path="/register" element={<RegisterStudent />} />
             <Route path="/mark-attendance" element={<MarkAttendance />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/settings/privacy" element={<PrivacySettings onLogout={() => setLoggedIn(false)} />}/>
+            <Route path="/settings/privacy" element={<PrivacySettings onLogout={() => setLoggedIn(false)} />} />
 
           </Routes>
         </Router>

@@ -1,7 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 
 const data = [
-  { name: "Math", attendance: 85 },
+  { name: "Mathematics", attendance: 85 },
   { name: "Science", attendance: 90 },
   { name: "English", attendance: 78 },
   { name: "History", attendance: 88 }

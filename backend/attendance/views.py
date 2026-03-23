@@ -1,4 +1,178 @@
+import base64
+import numpy as np
+import cv2
 import face_recognition
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import Student, Attendance
+from .serializers import StudentSerializer, AttendanceSerializer
+
+
+# 🔹 Helper: convert base64 → image
+def decode_image(base64_string):
+    format, imgstr = base64_string.split(';base64,')
+    img_bytes = base64.b64decode(imgstr)
+    np_arr = np.frombuffer(img_bytes, np.uint8)
+    return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+
+# ✅ 1. Register Student
+class RegisterStudentAPIView(APIView):
+    def post(self, request):
+        try:
+            rollNo = request.data.get("rollNo")
+            name = request.data.get("name")
+            className = request.data.get("className")
+            faceImage = request.data.get("faceImage")
+
+            if not faceImage:
+                return Response({"error": "No image received"}, status=400)
+
+            if Student.objects.filter(rollNo=rollNo).exists():
+                return Response({"error": "Student already exists"}, status=400)
+
+            image = decode_image(faceImage)
+
+            if image is None:
+                return Response({"error": "Invalid image"}, status=400)
+
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            encodings = face_recognition.face_encodings(rgb_image)
+
+            if len(encodings) == 0:
+                return Response({"error": "No face detected"}, status=400)
+
+            encoding_bytes = encodings[0].tobytes()
+
+            Student.objects.create(
+                rollNo=rollNo,
+                name=name,
+                className=className,
+                face_encodings=encoding_bytes
+            )
+
+            return Response({"message": "Student registered successfully"})
+
+        except Exception as e:
+            print("ERROR:", str(e))  # 🔥 check terminal
+            return Response({"error": "Server error"}, status=500)
+
+# ✅ 2. Mark Attendance
+class MarkAttendanceAPIView(APIView):
+    def post(self, request):
+        try:
+            from datetime import date
+
+            className = request.data.get("className")
+            faceImage = request.data.get("faceImage")
+
+            # Decode image
+            image = decode_image(faceImage)
+
+            if image is None:
+                return Response({"error": "Invalid image"}, status=400)
+
+            # Convert to RGB
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            # Get face encoding
+            encodings = face_recognition.face_encodings(rgb_image)
+
+            if len(encodings) == 0:
+                return Response({"error": "No face detected"}, status=400)
+
+            unknown_encoding = encodings[0]
+
+            students = Student.objects.filter(className=className)
+
+            best_match = None
+            lowest_distance = 1.0  # max distance
+
+            for student in students:
+                known_encoding = np.frombuffer(student.face_encodings, dtype=np.float64)
+
+                distance = face_recognition.face_distance(
+                    [known_encoding], unknown_encoding
+                )[0]
+
+                if distance < lowest_distance:
+                    lowest_distance = distance
+                    best_match = student
+
+            # 🎯 Threshold (VERY IMPORTANT)
+            if best_match and lowest_distance < 0.5:
+
+                # Prevent duplicate attendance
+                if Attendance.objects.filter(
+                    student=best_match, date=date.today()
+                ).exists():
+                    return Response({
+                        "name": best_match.name,
+                        "status": "Already Marked"
+                    })
+
+                Attendance.objects.create(
+                    student=best_match,
+                    status="Present",
+                )
+
+                return Response({
+                    "name": best_match.name,
+                    "status": "Present"
+                })
+
+            return Response({"error": "Face not recognized"}, status=404)
+
+        except Exception as e:
+            print("ERROR:", str(e))
+            return Response({"error": "Server error"}, status=500)
+
+# ✅ 3. Get Students
+class StudentListAPIView(APIView):
+    def get(self, request):
+        students = Student.objects.all()
+        serializer = StudentSerializer(students, many=True)
+        return Response(serializer.data)
+
+
+# ✅ 4. Get Attendance
+class AttendanceListAPIView(APIView):
+    def get(self, request):
+        className = request.GET.get("className")
+
+        records = Attendance.objects.filter(
+            student__className__iexact=className
+        ).select_related('student')
+
+        serializer = AttendanceSerializer(records, many=True)
+        return Response(serializer.data)
+
+
+# ✅ 5. Stats API
+class StatsAPIView(APIView):
+    def get(self, request):
+        className = request.GET.get("className")
+
+        students = Student.objects.filter(className=className)
+        total = students.count()
+
+        today_records = Attendance.objects.filter(
+            student__className__iexact=className
+        )
+
+        present = today_records.count()
+        absent = total - present
+
+        return Response({
+            "total": total,
+            "present": present,
+            "absent": absent
+        })
+'''import face_recognition
 import numpy as np
 from datetime import date,time
 from rest_framework.views import APIView
@@ -132,13 +306,13 @@ class RegisterFaceAPIView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
-        student_id = serializer.validated_data['student_id']
+        rollNo = serializer.validated_data['rollNo']
         name = serializer.validated_data['name']
-        email = serializer.validated_data['email']
-        image = serializer.validated_data['image']
+        className = serializer.validated_data['className']
+        faceImage = serializer.validated_data['faceImage']
 
         # ---- Read image ----
-        image_np = face_recognition.load_image_file(image)
+        image_np = face_recognition.load_image_file(faceImage)
 
         # ---- Detect faces ----
         face_locations = face_recognition.face_locations(image_np)
@@ -178,4 +352,4 @@ class RegisterFaceAPIView(APIView):
             {"message": "Face registered successfully"},
             status=status.HTTP_201_CREATED
         )
-        
+        '''
