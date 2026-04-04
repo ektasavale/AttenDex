@@ -26,6 +26,9 @@ class RegisterStudentAPIView(APIView):
             rollNo = request.data.get("rollNo")
             name = request.data.get("name")
             className = request.data.get("className")
+            lockedClass = className.strip().upper()
+            department = request.data.get("department")
+            year = request.data.get("year")
             faceImage = request.data.get("faceImage")
 
             if not faceImage:
@@ -52,6 +55,8 @@ class RegisterStudentAPIView(APIView):
                 rollNo=rollNo,
                 name=name,
                 className=className,
+                department=department,
+                year=year,
                 face_encodings=encoding_bytes
             )
 

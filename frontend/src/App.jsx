@@ -125,7 +125,7 @@ function TeacherDashboard() {
         <p onClick={() => navigate("/register")}>
           <FaUserPlus style={{ marginRight: "8px" }} /> Register Student
         </p>
-        <p onClick={() => navigate("/mark-attendance")}>
+        <p onClick={() => navigate("/attendance")}>
           <FaClipboardCheck style={{ marginRight: "8px" }} /> Mark Attendance
         </p>
         <p onClick={() => navigate("/reports")}>
@@ -177,11 +177,10 @@ function TeacherDashboard() {
           <table style={{ width: "100%" }}>
             <thead>
               <tr>
-                <th>Roll No</th><th>Name</th><th>Class</th><th>Status</th>
+                <th>Roll No</th><th>Name</th><th>Class</th><th>Department</th><th>Year</th><th>Time</th><th>Status</th>
               </tr>
             </thead>
             <tbody>
-              <tbody>
                 {data.length === 0 ? (
                   <tr>
                     <td colSpan="4" style={{ textAlign: "center" }}>
@@ -194,6 +193,9 @@ function TeacherDashboard() {
                       <td>{s.rollNo}</td>
                       <td>{s.name}</td>
                       <td>{subject}</td>
+                      <td>{s.department}</td>
+                      <td>{s.year}</td>
+                      <td>{s.time}</td>
                       <td>
                         <span style={statusStyle(s.status)}>
                           {s.status}
@@ -203,14 +205,13 @@ function TeacherDashboard() {
                   ))
                 )}
               </tbody>
-            </tbody>
           </table>
         </div>
 
         {/* Quick Actions */}
         <div style={{ display: "flex", gap: "20px" }}>
           <button style={buttonStyle} onClick={() => navigate("/register")}>➕ Register Student</button>
-          <button style={buttonStyle} onClick={() => navigate("/mark-attendance")}>✅ Mark Attendance</button>
+          <button style={buttonStyle} onClick={() => navigate("/attendance")}>✅ Mark Attendance</button>
         </div>
       </div>
     </div>
@@ -223,7 +224,8 @@ function RegisterStudent() {
   const [rollNo, setRollNo] = useState("");
   const [name, setName] = useState("");
   const [className, setClassName] = useState("");
-
+  const [department, setDepartment] = useState("");
+  const [year, setYear] = useState("");
   const handleRegister = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
 
@@ -237,7 +239,7 @@ function RegisterStudent() {
       const res = await fetch("http://127.0.0.1:8000/api/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rollNo, name, className, faceImage: imageSrc })
+        body: JSON.stringify({ rollNo, name, className: className, department, year, faceImage: imageSrc })
       });
 
       const data = await res.json();
@@ -295,6 +297,19 @@ function RegisterStudent() {
           onChange={(e) => setClassName(e.target.value)}
           style={inputStyle}
         />
+        <input
+          placeholder="Department"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          style={inputStyle}
+        />
+
+        <input
+          placeholder="Year"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          style={inputStyle}
+        />
 
         <Webcam
           ref={webcamRef}
@@ -321,7 +336,11 @@ function MarkAttendance() {
   const webcamRef = useRef(null);
 
   const [className, setClassName] = useState("");
+  const [lockedClass, setLockedClass] = useState("");
   const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [recent, setRecent] = useState([]);
+
 
   const handleAttendance = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -347,93 +366,152 @@ function MarkAttendance() {
       });
 
       const data = await res.json();
-      const [loading, setLoading] = useState(false);
+     
       setLoading(true);
       // API call
       setLoading(false);
       { loading ? "Scanning..." : "Scan Face & Mark" }
       if (res.ok) {
-        setResult(`✅ ${data.name} marked ${data.status}`);
-      }
-      if (data.status === "Already Marked") {
-        setResult(`⚠️ ${data.name} already marked today`);
-      } else {
-        setResult(`❌ ${data.error}`);
-      }
+  if (data.status === "Already Marked") {
+    setResult(`⚠️ ${data.name} already marked`);
+  } else {
+    setResult(`✅ ${data.name} marked ${data.status}`);
+  }
+  setRecent(prev => [data, ...prev.slice(0, 4)]);
+} else {
+  setResult(`❌ ${data.error}`);
+}
 
     } catch (error) {
       console.error(error);
       setResult("❌ Server error");
     }
   };
-
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: "100vh",
-      background: "radial-gradient(circle at center, #852020, #22124b, #946221)",
-      color: "white"
-    }}>
-      <h2>📸 Mark Attendance</h2>
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+    background: "radial-gradient(circle at center, #852020, #22124b, #946221)",
+    color: "white"
+  }}>
+    <h2>📸 Mark Attendance</h2>
 
-      <input
-        placeholder="Enter Class"
-        value={className}
-        onChange={(e) => setClassName(e.target.value)}
-        style={{
-          padding: "10px",
-          margin: "10px",
-          borderRadius: "8px",
-          border: "none"
-        }}
-      />
+    {/* BEFORE SESSION */}
+    {!lockedClass ? (
+      <>
+        <input
+          placeholder="Enter Class"
+          value={className}
+          onChange={(e) => setClassName(e.target.value)}
+          style={{
+            padding: "10px",
+            margin: "10px",
+            borderRadius: "8px",
+            border: "none"
+          }}
+        />
 
-      <Webcam
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        videoConstraints={{
-          width: 640,
-          height: 480,
-          facingMode: "user"
-        }}
-        style={{
-          width: "300px",
-          borderRadius: "10px",
-          margin: "20px 0"
-        }}
-      />
+        <button
+          onClick={() => setLockedClass(className)}
+          style={{
+            padding: "12px 20px",
+            background: "#3498db",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer"
+          }}
+        >
+          Start Attendance
+        </button>
+      </>
+    ) : (
+      /* AFTER SESSION START */
+      <>
+        <h3>Class: {lockedClass}</h3>
 
-      <button
-        onClick={handleAttendance}
-        style={{
-          padding: "12px 20px",
-          background: "green",
-          color: "white",
-          border: "none",
-          borderRadius: "10px",
-          cursor: "pointer"
-        }}
-      >
-        Scan Face & Mark
-      </button>
+        <Webcam
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          videoConstraints={{
+            width: 640,
+            height: 480,
+            facingMode: "user"
+          }}
+          style={{
+            width: "300px",
+            borderRadius: "10px",
+            margin: "20px 0"
+          }}
+        />
 
-      {/* RESULT DISPLAY */}
-      {result && (
-        <div style={{
-          marginTop: "20px",
-          padding: "15px",
-          background: "rgba(255,255,255,0.2)",
-          borderRadius: "10px",
-          fontSize: "1.2rem"
-        }}>
-          {result}
-        </div>
-      )}
-    </div>
-  );
+        <button
+          onClick={handleAttendance}
+          style={{
+            padding: "12px 20px",
+            background: "green",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer"
+          }}
+        >
+          {loading ? "Scanning..." : "Scan Face & Mark"}
+        </button>
+
+        <button
+          onClick={() => setLockedClass("")}
+          style={{
+            padding: "10px 18px",
+            marginTop: "10px",
+            background: "crimson",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer"
+          }}
+        >
+          End Session
+        </button>
+      </>
+    )}
+
+    {/* RESULT */}
+    {result && (
+      <div style={{
+        marginTop: "20px",
+        padding: "15px",
+        borderRadius: "10px",
+        background: result.includes("❌") ? "#e74c3c" : "#2ecc71",
+        fontWeight: "bold"
+      }}>
+        {result}
+      </div>
+    )}
+
+    {/* RECENT SCANS */}
+    {recent.length > 0 && (
+      <div style={{
+        marginTop: "20px",
+        padding: "15px",
+        background: "rgba(255,255,255,0.1)",
+        borderRadius: "10px",
+        width: "300px"
+      }}>
+        <h4>Recent Scans</h4>
+        {recent.map((s, i) => (
+          <p key={i}>
+            {s.name} - {s.status}
+          </p>
+        ))}
+      </div>
+    )}
+  </div>
+);
+ 
 }
 
 // Stat Card
@@ -507,7 +585,7 @@ function App() {
           <Routes>
             <Route path="/" element={<TeacherDashboard />} />
             <Route path="/register" element={<RegisterStudent />} />
-            <Route path="/mark-attendance" element={<MarkAttendance />} />
+            <Route path="/attendance" element={<MarkAttendance />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings/privacy" element={<PrivacySettings onLogout={() => setLoggedIn(false)} />} />
 
