@@ -8,4 +8,6 @@ def get_face_encoding(image_file):
     if len(encodings) == 0:
         return None
 
+    
+
     return encodings[0]

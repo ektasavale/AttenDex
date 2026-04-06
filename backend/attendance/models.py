@@ -11,17 +11,7 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.rollNo} - {self.name}"
-'''class FaceEncoding(models.Model):
-    student = models.ForeignKey(
-        Student,
-        on_delete=models.CASCADE,
-        related_name="face_encodings"
-    )
-    encoding = models.BinaryField()
-    created_at = datetime.now().time()
 
-    def __str__(self):
-        return f"FaceEncoding for {self.student.student_id}"'''
 class Attendance(models.Model):
     STATUS_CHOICES = (
         ('PRESENT', 'Present'),
