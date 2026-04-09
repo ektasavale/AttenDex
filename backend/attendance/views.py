@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Student, Attendance
+from datetime import date
 from .serializers import StudentSerializer, AttendanceSerializer
 
 
@@ -145,7 +146,7 @@ class StudentListAPIView(APIView):
 
 
 # ✅ 4. Get Attendance
-class AttendanceListAPIView(APIView):
+ '''class AttendanceListAPIView(APIView):
     def get(self, request):
         className = request.GET.get("className")
 
@@ -154,11 +155,49 @@ class AttendanceListAPIView(APIView):
         ).select_related('student')
 
         serializer = AttendanceSerializer(records, many=True)
+        return Response(serializer.data)'''
+
+        class AttendanceListAPIView(APIView):
+    def get(self, request):
+        className = request.GET.get("className")
+        today = date.today()
+
+        records = Attendance.objects.filter(
+            student__className__iexact=className,
+            date=today
+        ).select_related('student')
+
+        serializer = AttendanceSerializer(records, many=True)
         return Response(serializer.data)
 
 
+
 # ✅ 5. Stats API
+
+from datetime import date
+
 class StatsAPIView(APIView):
+    def get(self, request):
+        className = request.GET.get("className")
+        today = date.today()
+
+        students = Student.objects.filter(className=className)
+        total = students.count()
+
+        today_records = Attendance.objects.filter(
+            student__className__iexact=className,
+            date=today
+        )
+
+        present = today_records.count()
+        absent = total - present
+
+        return Response({
+            "total": total,
+            "present": present,
+            "absent": absent
+        })
+'''class StatsAPIView(APIView):
     def get(self, request):
         className = request.GET.get("className")
 
@@ -176,7 +215,7 @@ class StatsAPIView(APIView):
             "total": total,
             "present": present,
             "absent": absent
-        })
+        })'''
 '''import face_recognition
 import numpy as np
 from datetime import date,time

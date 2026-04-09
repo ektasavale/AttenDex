@@ -8,6 +8,7 @@ def get_face_encoding(image_file):
     if len(encodings) == 0:
         return None
 
-    
+     if len(encodings) > 1:
+        return None, "Multiple faces detected"
 
     return encodings[0]
