@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from .views import UnmarkAttendanceAPIView
 
 urlpatterns = [
     path('register/', RegisterStudentAPIView.as_view()),
@@ -7,4 +8,6 @@ urlpatterns = [
     path('students/', StudentListAPIView.as_view()),
     path('attendance-list/', AttendanceListAPIView.as_view()),
     path('stats/', StatsAPIView.as_view()),
+    path('unmark-attendance/', UnmarkAttendanceAPIView.as_view()),
+    path('attendance/today/', TodayAttendanceAPIView.as_view()),
 ]

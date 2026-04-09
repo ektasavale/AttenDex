@@ -137,6 +137,29 @@ class MarkAttendanceAPIView(APIView):
             print("ERROR:", str(e))
             return Response({"error": "Server error"}, status=500)
 
+     #3 unmarkstudent attendance
+            class UnmarkAttendanceAPIView(APIView):
+            def delete(self, request):
+        rollNo = request.data.get("rollNo")
+        selected_date = request.data.get("date")  # optional
+
+        if not rollNo:
+            return Response({"error": "rollNo required"}, status=400)
+
+        # if date not given, take today
+        if not selected_date:
+            selected_date = date.today()
+
+        deleted, _ = Attendance.objects.filter(
+            student__rollNo=rollNo,
+            date=selected_date
+        ).delete()
+
+        if deleted == 0:
+            return Response({"message": "No attendance found"})
+        
+        return Response({"message": "Attendance unmarked successfully"})
+
 # ✅ 3. Get Students
 class StudentListAPIView(APIView):
     def get(self, request):
@@ -170,6 +193,28 @@ class StudentListAPIView(APIView):
         serializer = AttendanceSerializer(records, many=True)
         return Response(serializer.data)
 
+# 4. ✅printlist 
+
+class TodayAttendanceAPIView(APIView):
+    def get(self, request):
+        today = date.today()
+
+        records = Attendance.objects.filter(date=today).select_related('student')
+
+        data = []
+        for r in records:
+            data.append({
+                "student_name": r.student.name,
+                "rollNo": r.student.rollNo,
+                "className": r.student.className,
+                "department": r.student.department,
+                "year": r.student.year,
+                "time": r.time,
+                "status": r.status,
+                "date": r.date
+            })
+
+        return Response(data)
 
 
 # ✅ 5. Stats API
