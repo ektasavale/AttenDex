@@ -107,7 +107,8 @@ function TeacherDashboard() {
       .catch(err => console.error(err));
   }, [subject]);
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/attendance-list/?className=${subject}`)
+    //fetch(`http://127.0.0.1:8000/api/attendance-list/?className=${subject}`)
+        fetch(`http://127.0.0.1:8000/api/attendance/today/`)
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error(err));
