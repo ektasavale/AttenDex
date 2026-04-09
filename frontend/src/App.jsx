@@ -116,10 +116,114 @@ function TeacherDashboard() {
       color: "white", fontFamily: "Segoe UI"
     }}>
       {/* Sidebar */}
-
+       
       <div style={{ width: "200px", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
         <h2>Attendex</h2>
-        <p onClick={() => navigate("/")}>
+        <p
+  style={sidebarItemStyle}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.opacity = "1";
+    e.currentTarget.style.lineHeight = "1.9";
+    e.currentTarget.style.borderLeft = "4px solid #4f46e5";
+    e.currentTarget.style.background = "rgba(79,70,229,0.08)";
+    e.currentTarget.style.paddingLeft = "18px";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.opacity = "0.75";
+    e.currentTarget.style.lineHeight = "1.4";
+    e.currentTarget.style.borderLeft = "none";
+    e.currentTarget.style.background = "transparent";
+    e.currentTarget.style.paddingLeft = "14px";
+  }}
+  onClick={() => navigate("/")}
+>
+  <FaHome /> Dashboard
+</p>
+
+<p
+  style={sidebarItemStyle}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.opacity = "1";
+    e.currentTarget.style.lineHeight = "1.9";
+    e.currentTarget.style.borderLeft = "4px solid #4f46e5";
+    e.currentTarget.style.background = "rgba(79,70,229,0.08)";
+    e.currentTarget.style.paddingLeft = "18px";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.opacity = "0.75";
+    e.currentTarget.style.lineHeight = "1.4";
+    e.currentTarget.style.borderLeft = "none";
+    e.currentTarget.style.background = "transparent";
+    e.currentTarget.style.paddingLeft = "14px";
+  }}
+  onClick={() => navigate("/register")}
+>
+  <FaUserPlus /> Register Student
+</p>
+
+<p
+  style={sidebarItemStyle}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.opacity = "1";
+    e.currentTarget.style.lineHeight = "1.9";
+    e.currentTarget.style.borderLeft = "4px solid #4f46e5";
+    e.currentTarget.style.background = "rgba(79,70,229,0.08)";
+    e.currentTarget.style.paddingLeft = "18px";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.opacity = "0.75";
+    e.currentTarget.style.lineHeight = "1.4";
+    e.currentTarget.style.borderLeft = "none";
+    e.currentTarget.style.background = "transparent";
+    e.currentTarget.style.paddingLeft = "14px";
+  }}
+  onClick={() => navigate("/attendance")}
+>
+  <FaClipboardCheck /> Mark Attendance
+</p>
+
+<p
+  style={sidebarItemStyle}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.opacity = "1";
+    e.currentTarget.style.lineHeight = "1.9";
+    e.currentTarget.style.borderLeft = "4px solid #4f46e5";
+    e.currentTarget.style.background = "rgba(79,70,229,0.08)";
+    e.currentTarget.style.paddingLeft = "18px";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.opacity = "0.75";
+    e.currentTarget.style.lineHeight = "1.4";
+    e.currentTarget.style.borderLeft = "none";
+    e.currentTarget.style.background = "transparent";
+    e.currentTarget.style.paddingLeft = "14px";
+  }}
+  onClick={() => navigate("/reports")}
+>
+  <FaChartBar /> Reports
+</p>
+
+<p
+  style={sidebarItemStyle}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.opacity = "1";
+    e.currentTarget.style.lineHeight = "2.9";
+    e.currentTarget.style.borderLeft = "4px solid #4f46e5";
+    e.currentTarget.style.background = "rgba(79,70,229,0.08)";
+    e.currentTarget.style.paddingLeft = "18px";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.opacity = "0.75";
+    e.currentTarget.style.lineHeight = "1.4";
+    e.currentTarget.style.borderLeft = "none";
+    e.currentTarget.style.background = "transparent";
+    e.currentTarget.style.paddingLeft = "14px";
+  }}
+  onClick={() => navigate("/settings/privacy")}
+>
+  <FaLock /> Privacy Settings
+</p>
+       {/*} <p onClick={() => navigate("/")}>
           <FaHome style={{ marginRight: "8px" }} /> Dashboard
         </p>
         <p onClick={() => navigate("/register")}>
@@ -133,7 +237,7 @@ function TeacherDashboard() {
         </p>
         <p onClick={() => navigate("/settings/privacy")}>
           <FaLock style={{ marginRight: "8px" }} /> Privacy Settings
-        </p>
+        </p>*/}
       </div>
 
 
@@ -531,6 +635,19 @@ function StatCard({ title, value }) {
 }
 
 // Styles
+const sidebarItemStyle = {
+  padding: "12px 14px",
+  margin: "8px 0",
+  cursor: "pointer",
+  borderRadius: "8px",
+  lineHeight: "2.4",
+  opacity: 0.85,
+  transition: "all 0.3s ease",
+  display: "flex",
+  alignItems: "center",
+  gap: "11px"
+};
+
 const inputStyle = {
   width: "100%",
   padding: "12px",

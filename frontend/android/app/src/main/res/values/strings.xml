@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name"> AttenDex</string>
+    <string name="title_activity_main"> AttenDex</string>
+    <string name="package_name">com.attendex.app</string>
+    <string name="custom_url_scheme">com.attendex.app</string>
+</resources>
