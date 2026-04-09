@@ -1,5 +1,8 @@
 import Reports from "./Reports";
 import PrivacySettings from "./PrivacySettings";
+import TodayReport from "./TodayReport";
+
+
 import { FaHome, FaUserPlus, FaClipboardCheck, FaChartBar, FaLock } from "react-icons/fa";
 
 
@@ -8,7 +11,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useNavigate
+  useNavigate,
 } from "react-router-dom";
 
 
@@ -305,6 +308,7 @@ function TeacherDashboard() {
                           {s.status}
                         </span>
                       </td>
+                     
                     </tr>
                   ))
                 )}
@@ -433,6 +437,9 @@ function RegisterStudent() {
     </div>
   );
 }
+
+// print report
+
 
 
 // Mark Attendance Page
@@ -705,6 +712,8 @@ function App() {
             <Route path="/attendance" element={<MarkAttendance />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/settings/privacy" element={<PrivacySettings onLogout={() => setLoggedIn(false)} />} />
+            <Route path="/reports" element={<TodayReport />} />
+            
 
           </Routes>
         </Router>
