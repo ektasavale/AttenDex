@@ -1,7 +1,5 @@
 from django.urls import path
 from .views import *
-from .views import UnmarkAttendanceAPIView
-
 urlpatterns = [
     path('register/', RegisterStudentAPIView.as_view()),
     path('attendance/', MarkAttendanceAPIView.as_view()),
