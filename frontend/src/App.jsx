@@ -102,7 +102,9 @@ function TeacherDashboard() {
 
   const [data, setData] = useState([]);
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/stats/?className=${subject}`)
+    fetch(`http://127.0.0.1:8000/
+      
+      stats/?className=${subject}`)
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(err => console.error(err));
