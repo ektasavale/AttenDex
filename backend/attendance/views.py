@@ -1,7 +1,7 @@
 import base64
 import numpy as np
-#import cv2
-#import face_recognition
+import cv2
+import face_recognition
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
