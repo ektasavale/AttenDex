@@ -3,7 +3,9 @@ import PrivacySettings from "./PrivacySettings";
 import TodayReport from "./TodayReport";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import BASE_URL from "./api";
 
+fetch(`${BASE_URL}/students/`)
 import { FaHome, FaUserPlus, FaClipboardCheck, FaChartBar, FaLock } from "react-icons/fa";
 
 
@@ -110,8 +112,8 @@ function TeacherDashboard() {
       .catch(err => console.error(err));
   }, [subject]);
   useEffect(() => {
-    //fetch(`http://127.0.0.1:8000/api/attendance-list/?className=${subject}`)
-    fetch(`http://127.0.0.1:8000/api/attendance/today/`)
+    //fetch(`${BASE_URL}/api/attendance-list/?className=${subject}`)
+    fetch(`${BASE_URL}/api/attendance/today/`)
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error(err));
@@ -121,7 +123,7 @@ function TeacherDashboard() {
     if (!confirm(`Unmark attendance for roll no ${rollNo}?`)) return;
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/unmark-attendance/", {
+      const res = await fetch(`${BASE_URL}/api/unmark-attendance/`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rollNo, date: new Date().toISOString().split('T')[0] })
@@ -131,11 +133,11 @@ function TeacherDashboard() {
       alert(data.message);
 
       // Refresh data
-      fetch(`http://127.0.0.1:8000/api/stats/?className=${subject}`)
+      fetch(`${BASE_URL}/api/stats/?className=${subject}`)
         .then(res => res.json())
         .then(data => setStats(data))
         .catch(err => console.error(err));
-      fetch(`http://127.0.0.1:8000/api/attendance/today/`)
+      fetch(`${BASE_URL}/api/attendance/today/`)
         .then(res => res.json())
         .then(data => setData(data))
         .catch(err => console.error(err));
@@ -393,7 +395,7 @@ function TeacherDashboard() {
 
         try {
           console.log("Image:", imageSrc?.substring(0, 50));
-        const res = await fetch("http://127.0.0.1:8000/api/register/", {
+        const res = await fetch(`${BASE_URL}/api/register/`, {
           method: "POST",
         headers: {"Content-Type": "application/json" },
         body: JSON.stringify({rollNo, name, className: className, department, year, faceImage: imageSrc })
@@ -516,7 +518,7 @@ function TeacherDashboard() {
     }
 
         try {
-      const res = await fetch("http://127.0.0.1:8000/api/attendance/", {
+      const res = await fetch(`${BASE_URL}/api/attendance/`, {
           method: "POST",
         headers: {"Content-Type": "application/json" },
         body: JSON.stringify({

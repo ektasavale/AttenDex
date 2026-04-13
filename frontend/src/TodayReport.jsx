@@ -11,7 +11,7 @@ function TodayReport() {
   const fetchTodayAttendance = async () => {
     try {
       const res = await axios.get(
-        "http://127.0.0.1:8000/api/attendance/today/"
+        `${BASE_URL}/api/attendance/today/`
       );
       setRecords(res.data);
     } catch (err) {
