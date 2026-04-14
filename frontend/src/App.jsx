@@ -104,7 +104,7 @@ function TeacherDashboard() {
   const [data, setData] = useState([]);
   useEffect(() => {
     
-    fetch(`${BASE_URL}/api/stats/?subject=${subject}`)
+    fetch(`${BASE_URL}/api/stats/?className=${subject}`)
       .then(res => res.json())
      .then(data => {
   console.log("Stats API:", data);
@@ -113,8 +113,8 @@ function TeacherDashboard() {
       .catch(err => console.error(err));
   }, [subject]);
   useEffect(() => {
-    //fetch(`${BASE_URL}/api/attendance-list/?subject=${subject}`)
-    fetch(`${BASE_URL}/api/attendance/today/?subject=${subject}`)
+    //fetch(`${BASE_URL}/api/attendance-list/?className=${subject}`)
+    fetch(`${BASE_URL}/api/attendance/today/?className=${subject}`)
       .then(res => res.json())
       .then(data => setData(data))
       .catch(err => console.error(err));
@@ -134,11 +134,11 @@ function TeacherDashboard() {
       alert(data.message);
 
       // Refresh data
-      fetch(`${BASE_URL}/api/stats/?subject=${subject}`)
+      fetch(`${BASE_URL}/api/stats/?className=${subject}`)
         .then(res => res.json())
         .then(data => setStats(data))
         .catch(err => console.error(err));
-      fetch(`${BASE_URL}/api/attendance/today/?subject=${subject}`)
+      fetch(`${BASE_URL}/api/attendance/today/?className=${subject}`)
         .then(res => res.json())
         .then(data => setData(data))
         .catch(err => console.error(err));
@@ -383,7 +383,7 @@ function TeacherDashboard() {
   const webcamRef = useRef(null);
         const [rollNo, setRollNo] = useState("");
         const [name, setName] = useState("");
-        const [subject, setsubject] = useState("");
+        const [className, setClassName] = useState("");
         const [department, setDepartment] = useState("");
         const [year, setYear] = useState("");
   const handleRegister = async () => {
@@ -399,7 +399,7 @@ function TeacherDashboard() {
         const res = await fetch(`${BASE_URL}/api/register/`, {
           method: "POST",
         headers: {"Content-Type": "application/json" },
-        body: JSON.stringify({rollNo, name, subject: subject, department, year, faceImage: imageSrc })
+        body: JSON.stringify({rollNo, name, className: className, department, year, faceImage: imageSrc })
       });
 
         const data = await res.json();
@@ -453,8 +453,8 @@ function TeacherDashboard() {
             />
             <input
               placeholder="Class"
-              value={subject}
-              onChange={(e) => setsubject(e.target.value)}
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
               style={inputStyle}
             />
             <input
@@ -498,7 +498,7 @@ function TeacherDashboard() {
         function MarkAttendance() {
   const webcamRef = useRef(null);
 
-        const [subject, setsubject] = useState("");
+        const [className, setClassName] = useState("");
         const [lockedClass, setLockedClass] = useState("");
         const [result, setResult] = useState("");
         const [loading, setLoading] = useState(false);
@@ -513,7 +513,7 @@ function TeacherDashboard() {
         return;
     }
 
-        if (!subject) {
+        if (!className) {
           alert("⚠️ Enter class name");
         return;
     }
@@ -523,7 +523,7 @@ function TeacherDashboard() {
           method: "POST",
         headers: {"Content-Type": "application/json" },
         body: JSON.stringify({
-          subject: subject,
+          className: className,
         faceImage: imageSrc
         })
       });
@@ -531,10 +531,9 @@ function TeacherDashboard() {
         const data = await res.json();
 
         setLoading(true);
-        // API call
-       { const res = await fetch(`${BASE_URL}/api/attendance/`, );}
+        {const res= await fetch(`${BASE_URL}/api/attendance/`,);
+        }
         setLoading(false);
-    {if (loading) return;}
         {loading ? "Scanning..." : "Scan Face & Mark"}
         if (res.ok) {
         if (data.status === "Already Marked") {
@@ -569,8 +568,8 @@ function TeacherDashboard() {
             <>
               <input
                 placeholder="Enter Class"
-                value={subject}
-                onChange={(e) => setsubject(e.target.value)}
+                value={className}
+                onChange={(e) => setClassName(e.target.value)}
                 style={{
                   padding: "10px",
                   margin: "10px",
@@ -580,7 +579,7 @@ function TeacherDashboard() {
               />
 
               <button
-                onClick={() => setLockedClass(subject)}
+                onClick={() => setLockedClass(className)}
                 style={{
                   padding: "12px 20px",
                   background: "#3498db",
