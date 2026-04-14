@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import BASE_URL from "./api";
+
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   Chart as ChartJS,
   BarElement,
@@ -25,25 +28,50 @@ function Reports() {
 
   // Fetch Attendance
   const fetchReport = async () => {
-    try {
-      const res = await fetch(
-        `${BASE_URL}/api/attendance/today/?className=${className}`
-      );
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/attendance/today/?className=${className}`
+    );
 
-      if (!res.ok) throw new Error("Failed to fetch report");
-      console.log(report);
-      console.log(report.length);
-      const data = await res.json();
-      setReport(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load report");
-      setReport([]);
-    }
-  };
+    if (!res.ok) throw new Error("Failed to fetch report");
 
+    const data = await res.json();
+    setReport(Array.isArray(data) ? data : []);
+    return data; // ✅ ADD THIS
+  } catch (err) {
+    console.error(err);
+    setError("Failed to load report");
+    setReport([]);
+    return []; // ✅ ADD THIS
+  }
+};
+const fetchStats = async () => {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/api/stats/?className=${className}`
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch stats");
+
+    const data = await res.json();
+
+    const formatted = {
+      total: data.total || data.total_students || 0,
+      present: data.present || data.present_count || 0,
+      absent: data.absent || data.absent_count || 0,
+    };
+
+    setStats(formatted);
+    return formatted; // ✅ ADD THIS
+  } catch (err) {
+    console.error(err);
+    const fallback = { total: 0, present: 0, absent: 0 };
+    setStats(fallback);
+    return fallback; // ✅ ADD THIS
+  }
+};
   // Fetch Stats
-  const fetchStats = async () => {
+ {/*} const fetchStats = async () => {
     try {
       const res = await fetch(
         `${BASE_URL}/api/stats/?className=${className}`
@@ -60,15 +88,37 @@ function Reports() {
       console.error(err);
       setStats({ total: 0, present: 0, absent: 0 });
     }
+  };*/}
+const downloadPDF = () => {
+  const doc = new jsPDF();
+
+  doc.text(`Attendance Report - ${className}`, 14, 10);
+
+  const tableData = report.map((s) => [
+    s.rollNo,
+    s.student_name,
+    s.status,
+    s.time,
+  ]);
+
+  autoTable(doc, {
+    head: [["Roll No", "Name", "Status", "Time"]],
+    body: tableData,
+  });
+
+  doc.save("attendance_report.pdf");
+};
+useEffect(() => {
+  const loadData = async () => {
+    setLoading(true);
+    await fetchReport();
+    await fetchStats();
+    setLoading(false);
   };
 
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchReport(), fetchStats()]).finally(() =>
-      setLoading(false)
-    );
-  }, [className]);
-
+  loadData();
+}, [className]);
+  
   const percentage = stats.total
     ? ((stats.present / stats.total) * 100).toFixed(1)
     : 0;
@@ -83,7 +133,7 @@ function Reports() {
       },
     ],
   };
-
+console.log("Stats:", stats);
   return (
     <div style={{ padding: "20px", color: "white" }}>
       <h2>📊 Reports Dashboard</h2>
@@ -120,7 +170,7 @@ function Reports() {
           {/* Chart */}
           <div
             style={{
-              background: "rgba(255,255,255,0.1)",
+              background: "rgba(23, 244, 19, 0.1)",
               padding: "20px",
               borderRadius: "10px",
               marginBottom: "20px",
@@ -136,50 +186,47 @@ function Reports() {
               padding: "20px",
               borderRadius: "10px",
             }}
-          ><p>Report count: {report.length}</p>
-            <table style={{ width: "100%" }}>
-              <thead>
-                <tr>
-                  <th>Roll No</th>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" style={{ textAlign: "center" }}>
-                      No data found
-                    </td>
-                  </tr>
-                ) : (
-                  report.map((s, i) => (
-                    <tr key={i}>
-                      <td>{s.rollNo || s.student?.rollNo || "-"}</td>
-                      <td>{s.student_name || s.student?.student_name || "-"}</td>
-                      <td>
-                        <span
-                          style={{
-                            padding: "5px 10px",
-                            borderRadius: "5px",
-                            background:
-                              s.status === "Present"
-                                ? "green"
-                                : s.status === "Absent"
-                                  ? "red"
-                                  : "orange",
-                          }}
-                        >
-                          {s.status || "-"}
-                        </span>
-                      </td>
-                      <td>{s.time || s.timestamp || "-"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          ><button
+  onClick={downloadPDF}
+  style={{
+    marginBottom: "15px",
+    padding: "10px 15px",
+    borderRadius: "8px",
+    border: "none",
+    background: "#4CAF50",
+    color: "white",
+    cursor: "pointer",
+  }}
+>
+  📄 Download Report
+</button><p>Report count: {report.length}</p>
+            <table
+  style={{
+    width: "100%",
+    color: "black",
+    borderCollapse: "collapse",
+    background: "white"
+  }}
+>
+  <thead>
+    <tr>
+      <th style={{ border: "1px solid black", padding: "8px" }}>Roll No</th>
+      <th style={{ border: "1px solid black", padding: "8px" }}>Name</th>
+      <th style={{ border: "1px solid black", padding: "8px" }}>Status</th>
+      <th style={{ border: "1px solid black", padding: "8px" }}>Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {report.map((s, i) => (
+      <tr key={i}>
+        <td style={{ border: "1px solid black", padding: "8px" }}>{s.rollNo}</td>
+        <td style={{ border: "1px solid black", padding: "8px" }}>{s.student_name}</td>
+        <td style={{ border: "1px solid black", padding: "8px" }}>{s.status}</td>
+        <td style={{ border: "1px solid black", padding: "8px" }}>{s.time}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           </div>
         </>
       )}
@@ -193,14 +240,17 @@ function Card({ title, value }) {
     <div
       style={{
         flex: 1,
-        background: "rgba(255,255,255,0.1)",
+        background: "white",
+        color: "black",
         padding: "20px",
         borderRadius: "10px",
         textAlign: "center",
       }}
     >
       <h3>{title}</h3>
-      <p style={{ fontSize: "1.5rem", fontWeight: "bold" }}>{value}</p>
+      <p style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+        {value ?? 0}
+      </p>
     </div>
   );
 }
