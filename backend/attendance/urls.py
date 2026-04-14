@@ -12,6 +12,6 @@ urlpatterns = [
     path('students/', StudentListAPIView.as_view()),
     path('attendance-list/', AttendanceListAPIView.as_view()),
     path('stats/', StatsAPIView.as_view()),
-    path('unmark-attendance/',UnmarkAttendanceAPIView.as_view()),
+    path('unmark-attendance/', UnmarkAttendanceAPIView.as_view()),
     path('attendance/today/', TodayAttendanceAPIView.as_view()),
 ]

@@ -26,8 +26,8 @@ class RegisterStudentAPIView(APIView):
         try:
             rollNo = request.data.get("rollNo")
             name = request.data.get("name")
-            className = request.data.get("className")
-            lockedClass = className.strip().upper()
+            subject = request.data.get("subject")
+            lockedClass = subject.strip().upper()
             department = request.data.get("department")
             year = request.data.get("year")
             faceImage = request.data.get("faceImage")
@@ -55,7 +55,7 @@ class RegisterStudentAPIView(APIView):
             Student.objects.create(
                 rollNo=rollNo,
                 name=name,
-                className=className,
+                subject=subject,
                 department=department,
                 year=year,
                 face_encodings=encoding_bytes
@@ -73,7 +73,7 @@ class MarkAttendanceAPIView(APIView):
         try:
             from datetime import date
 
-            className = request.data.get("className")
+            subject = request.data.get("subject")
             faceImage = request.data.get("faceImage")
 
             # Decode image
@@ -93,7 +93,7 @@ class MarkAttendanceAPIView(APIView):
 
             unknown_encoding = encodings[0]
 
-            students = Student.objects.filter(className=className)
+            students = Student.objects.filter(subject=subject)
 
             best_match = None
             lowest_distance = 1.0  # max distance
@@ -171,11 +171,11 @@ class StudentListAPIView(APIView):
 # ✅ 5. Get Attendance
 class AttendanceListAPIView(APIView):
     def get(self, request):
-        className = request.GET.get("className")
+        subject = request.GET.get("subject")
         today = date.today()
 
         records = Attendance.objects.filter(
-            student__className__iexact=className,
+            student__subject__iexact=subject,
             date=today
         ).select_related('student')
 
@@ -195,7 +195,7 @@ class TodayAttendanceAPIView(APIView):
             data.append({
                 "student_name": r.student.name,
                 "rollNo": r.student.rollNo,
-                "className": r.student.className,
+                "subject": r.student.subject,
                 "department": r.student.department,
                 "year": r.student.year,
                 "time": r.time,
@@ -212,14 +212,14 @@ from datetime import date
 
 class StatsAPIView(APIView):
     def get(self, request):
-        className = request.GET.get("className")
+        subject = request.GET.get("subject")
         today = date.today()
 
-        students = Student.objects.filter(className=className)
+        students = Student.objects.filter(subject=subject)
         total = students.count()
 
         today_records = Attendance.objects.filter(
-            student__className__iexact=className,
+            student__subject__iexact=subject,
             date=today
         )
 

@@ -4,7 +4,7 @@ from datetime import datetime,date
 class Student(models.Model):
     rollNo = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=100)
-    className = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50)
     department = models.CharField(max_length=50)
     year =models.CharField(max_length=10)
     face_encodings = models.BinaryField()

@@ -5,7 +5,7 @@ from .models import Attendance
 '''class RegisterFaceSerializer(serializers.Serializer):
     rollNo = serializers.CharField()
     name = serializers.CharField()
-    className = serializers.CharField()
+    subject = serializers.CharField()
     faceImage = serializers.ImageField()
 
 class AttendanceSerializer(serializers.ModelSerializer):
