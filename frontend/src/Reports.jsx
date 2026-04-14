@@ -32,6 +32,7 @@ function Reports() {
 
       if (!res.ok) throw new Error("Failed to fetch report");
       console.log(report);
+      console.log(report.length);
       const data = await res.json();
       setReport(Array.isArray(data) ? data : []);
     } catch (err) {
