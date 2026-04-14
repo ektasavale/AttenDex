@@ -187,9 +187,12 @@ class AttendanceListAPIView(APIView):
 class TodayAttendanceAPIView(APIView):
     def get(self, request):
         today = date.today()
-
+        className = request.GET.get("className")
         records = Attendance.objects.filter(date=today).select_related('student')
+        if className:
+            records = records.filter(student__className=className)
 
+        records = records.select_related('student')
         data = []
         for r in records:
             data.append({
