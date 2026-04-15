@@ -22,3 +22,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('attendance.urls')),
 ]
+# domain working url - attendex-ektasavales-projects.vercel.app
