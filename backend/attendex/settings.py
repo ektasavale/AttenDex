@@ -36,8 +36,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     ...
 ]
+CORS_ALLOWED_ORIGINS = [
+    "https://your-vercel-app.vercel.app"
+]
 
-CORS_ALLOW_ALL_ORIGINS = True
 INSTALLED_APPS = [
      "corsheaders",
     'django.contrib.admin',
