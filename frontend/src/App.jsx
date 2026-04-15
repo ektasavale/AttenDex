@@ -4,7 +4,7 @@ import TodayReport from "./TodayReport";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import BASE_URL from "./api";
-import Layout from "./layout/layout";
+
 import { FaHome, FaUserPlus, FaClipboardCheck, FaChartBar, FaLock } from "react-icons/fa";
 
 
@@ -753,7 +753,6 @@ const statusStyle = (status) => {
 
         return (
         <>
-        <Layout>
           {showSplash ? (
             <Splash onFinish={() => setShowSplash(false)} />
           ) : !loggedIn ? (
@@ -800,7 +799,7 @@ const statusStyle = (status) => {
               </AnimatePresence>
             </Router>
           )}
-       </Layout> </>
+        </>
         );
 }
 
