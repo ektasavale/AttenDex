@@ -21,14 +21,13 @@ import Webcam from "react-webcam";
 
 const appStyle = {
   minHeight: "100vh",
+  width:"100%",
   background: "linear-gradient(135deg, #1e1e2f, #2c3e50)",
   color: "white",
   fontFamily: "Segoe UI, sans-serif"
 };
 
 // Splash Screen
-
-
 function Splash({ onFinish }) {
   useEffect(() => {
     const timer = setTimeout(onFinish, 3000);
@@ -41,6 +40,7 @@ function Splash({ onFinish }) {
       justifyContent: "center",
       alignItems: "center",
       height: "100vh",
+      width: "100%",
       background: "radial-gradient(circle at center, #852020, #22124b, #946221)"
     }}>
       <div style={{ textAlign: "center", color: "white" }}>
