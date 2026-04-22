@@ -94,7 +94,7 @@ function Login({ onLogin }) {
 function TeacherDashboard() {
   const [subject, setSubject] = useState("Mathematics");
   const navigate = useNavigate();
-
+  const isMobile = window.innerWidth < 768;
   const [stats, setStats] = useState({
     total: 0,
     present: 0,
@@ -150,12 +150,13 @@ function TeacherDashboard() {
   return (
     <div style={{
       display: "flex", minHeight: "100vh",
+      flexDirection: isMobile ? "column" : "row",
       background: "radial-gradient(circle at center, #852020, #22124b, #946221)",
       color: "white", fontFamily: "Segoe UI"
     }}>
       {/* Sidebar */}
 
-      <div style={{ width: "200px", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
+      <div style={{ width: "200px",display: isMobile ? "flex" : "block", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
         <h2>Attendex</h2>
         <p
           style={sidebarItemStyle}
@@ -261,21 +262,6 @@ function TeacherDashboard() {
         >
           <FaLock /> Privacy Settings
         </p>
-        {/*} <p onClick={() => navigate("/")}>
-          <FaHome style={{ marginRight: "8px" }} /> Dashboard
-        </p>
-        <p onClick={() => navigate("/register")}>
-          <FaUserPlus style={{ marginRight: "8px" }} /> Register Student
-        </p>
-        <p onClick={() => navigate("/attendance")}>
-          <FaClipboardCheck style={{ marginRight: "8px" }} /> Mark Attendance
-        </p>
-        <p onClick={() => navigate("/reports")}>
-          <FaChartBar style={{ marginRight: "8px" }} /> Reports
-        </p>
-        <p onClick={() => navigate("/settings/privacy")}>
-          <FaLock style={{ marginRight: "8px" }} /> Privacy Settings
-        </p>*/}
       </div>
 
 
