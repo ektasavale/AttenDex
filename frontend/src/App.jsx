@@ -285,10 +285,14 @@ overflowX: "auto", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
         </div>
 
         {/* Stats Cards */}
-        <div style={{display: "grid",
-gridTemplateColumns: window.innerWidth < 768 ? "1fr 1fr" : "repeat(3, 1fr)",
-gap: "10px", gap: "20px", marginBottom: "20px" }}>
-          <motion.div
+        <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "20px",
+    marginBottom: "20px"
+  }}
+><motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4 }}
