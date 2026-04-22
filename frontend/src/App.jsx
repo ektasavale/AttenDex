@@ -94,7 +94,6 @@ function Login({ onLogin }) {
 function TeacherDashboard() {
   const [subject, setSubject] = useState("Mathematics");
   const navigate = useNavigate();
-  const isMobile = window.innerWidth < 768;
   const [stats, setStats] = useState({
     total: 0,
     present: 0,
@@ -149,14 +148,18 @@ function TeacherDashboard() {
   };
   return (
     <div style={{
-      display: "flex", minHeight: "100vh",
-      flexDirection: isMobile ? "column" : "row",
+      display: "flex",
+      flexDirection: window.innerWidth < 768 ? "column" : "row",
+      minHeight: "100vh",
       background: "radial-gradient(circle at center, #852020, #22124b, #946221)",
       color: "white", fontFamily: "Segoe UI"
     }}>
       {/* Sidebar */}
 
-      <div style={{ width: "200px",display: isMobile ? "flex" : "block", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
+      <div style={{ width: window.innerWidth < 768 ? "100%" : "220px",
+display: window.innerWidth < 768 ? "flex" : "block",
+flexDirection: "row",
+overflowX: "auto", background: "rgba(0,0,0,0.4)", padding: "20px" }}>
         <h2>Attendex</h2>
         <p
           style={sidebarItemStyle}
@@ -268,7 +271,7 @@ function TeacherDashboard() {
 
 
       {/* Main */}
-      <div style={{ flex: 1, padding: "20px" }}>
+      <div style={{ flex: 1,padding: window.innerWidth < 768 ? "10px" : "20px" }}>
         <h2>📊 {subject} Dashboard</h2>
         <p>Today: {new Date().toLocaleDateString()}</p>
 
@@ -282,7 +285,9 @@ function TeacherDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+        <div style={{display: "grid",
+gridTemplateColumns: window.innerWidth < 768 ? "1fr 1fr" : "repeat(3, 1fr)",
+gap: "10px", gap: "20px", marginBottom: "20px" }}>
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -315,6 +320,7 @@ function TeacherDashboard() {
 
         {/* Attendance Table */}
         <div style={{
+          overflowX: "auto",
           background: "rgba(255,255,255,0.1)", padding: "20px",
           borderRadius: "10px", marginBottom: "20px"
         }}>
