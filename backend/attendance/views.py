@@ -217,16 +217,14 @@ class StatsAPIView(APIView):
     def get(self, request):
         className = request.GET.get("className")
         today = date.today()
-
-        students = Student.objects.filter(className=className)
+        students = Student.objects.filter(className__iexact=className)
         total = students.count()
 
         today_records = Attendance.objects.filter(
             student__className__iexact=className,
             date=today
         )
-
-        present = today_records.count()
+        present = today_records.values("student").distinct().count()
         absent = total - present
 
         return Response({
