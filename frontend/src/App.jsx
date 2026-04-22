@@ -615,20 +615,6 @@ function MarkAttendance() {
             disabled={loading}
             style={{
               padding: "12px 20px",
-              background: loading ? "#555" : "green",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: loading ? "not-allowed" : "pointer"
-            }}
-          >
-            {loading ? "🔄 Scanning..." : "📸 Scan Face & Mark"}
-          </button>
-          <button
-            onClick={handleAttendance}
-            disabled={loading}
-            style={{
-              padding: "12px 20px",
               background: "green",
               color: "white",
               border: "none",
