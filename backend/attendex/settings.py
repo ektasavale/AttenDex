@@ -86,13 +86,23 @@ WSGI_APPLICATION = 'attendex.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-     "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3",  # fallback
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+if os.environ.get("DATABASE_URL"):
+    # 🚀 Production (Neon / Railway)
+    DATABASES = {
+        "default": dj_database_url.parse(
+            os.environ.get("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    # 💻 Local (SQLite)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(os.path.dirname(__file__), "db.sqlite3"),
+        }
+    }
 
 
 # Password validation
