@@ -450,7 +450,7 @@ function RegisterStudent() {
           style={inputStyle}
         />
         <input
-          placeholder="Class"
+          placeholder="Subject"
           value={className}
           onChange={(e) => setClassName(e.target.value)}
           style={inputStyle}
@@ -562,7 +562,7 @@ function MarkAttendance() {
       {!lockedClass ? (
         <>
           <input
-            placeholder="Enter Class"
+            placeholder="Enter Subject"
             value={className}
             onChange={(e) => setClassName(e.target.value)}
             style={{
